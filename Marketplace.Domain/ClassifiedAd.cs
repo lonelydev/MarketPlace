@@ -18,13 +18,20 @@ namespace Marketplace.Domain
         /// must supply id when creating a Classified Ad
         /// </summary>
         /// <param name="id"></param>
-        public ClassifiedAd(Guid id)
+        public ClassifiedAd(Guid id, Guid ownerId)
         {
             if(id == default)
             {
                 throw new ArgumentException("Identity must be specified", nameof(id));
             }
+
+            if (ownerId == default)
+            {
+                throw new ArgumentException("Owner id must be specified", nameof(ownerId));
+            }
+
             Id = id;
+            _ownerId = ownerId;
         }
 
         private Guid _ownerId;
