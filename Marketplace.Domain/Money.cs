@@ -40,7 +40,7 @@ namespace Marketplace.Domain
         /// </summary>
         /// <param name="amount"></param>
         /// <param name="currency"></param>
-        private Money(decimal amount, CurrencyDetails currency)
+        private Money(decimal amount, Currency currency)
         {
             Amount = amount;
             Currency = currency;
@@ -48,7 +48,7 @@ namespace Marketplace.Domain
 
         public decimal Amount { get; }
 
-        public CurrencyDetails Currency { get; }
+        public Currency Currency { get; }
 
         /// <summary>
         /// Factory functions to create money from different formats of inputs

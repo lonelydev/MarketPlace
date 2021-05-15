@@ -2,7 +2,7 @@
 
 namespace Marketplace.Domain
 {
-    public class CurrencyDetails : Value<CurrencyDetails>
+    public class Currency : Value<Currency>
     {
         /// <summary>
         /// This is a pattern to deal with absense of values or nulls.
@@ -10,7 +10,7 @@ namespace Marketplace.Domain
         /// This will make our code more readable by not introducing null checks wherever currency
         /// lookup is done.
         /// </summary>
-        public static CurrencyDetails None = new CurrencyDetails { InUse = false };
+        public static Currency None = new Currency { InUse = false };
 
         public string CurrencyCode { get; set; }
 
