@@ -1,4 +1,5 @@
 ﻿using Marketplace.Framework;
+using System;
 
 namespace Marketplace.Domain
 {
@@ -10,8 +11,26 @@ namespace Marketplace.Domain
     /// </summary>
     public class Money : Value<Money>
     {
+        /// <summary>
+        /// Factory functions to create money from different formats of inputs
+        /// decimal and string. In combination with a non-public constructor, this streamlines
+        /// the ways in which an instance of money can be created.
+        /// </summary>
+        /// <param name="amount"></param>
+        /// <returns></returns>
+        public static Money FromDecimal(decimal amount) => new Money(amount);
+        public static Money FromString(string amount) => new Money(decimal.Parse(amount));
+        
         public decimal Amount { get; }
-        public Money(decimal amount) => Amount = amount;
+        protected Money(decimal amount)
+        {
+            if (decimal.Round(amount, 2) != amount)
+            {
+                throw new ArgumentOutOfRangeException(nameof(amount), "Amount cannot have more than two decimals");
+            }
+
+            Amount = amount;
+        }
 
         public Money Add(Money summand) => new Money(Amount + summand.Amount);
 
@@ -20,5 +39,6 @@ namespace Marketplace.Domain
         public static Money operator +(Money summand1, Money summand2) => summand1.Add(summand2);
 
         public static Money operator -(Money minuend, Money subtrahend) => minuend.Subtract(subtrahend);
+        
     }
 }
