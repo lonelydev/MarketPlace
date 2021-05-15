@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Marketplace.Domain
+﻿namespace Marketplace.Domain
 {
     /// <summary>
     /// In order to make the implicit explicit, we create a Price value object
