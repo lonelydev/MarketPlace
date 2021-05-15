@@ -11,6 +11,7 @@ namespace Marketplace.Domain
     /// </summary>
     public class Money : Value<Money>
     {
+        private const string DefaultCurrency = "EUR";
         /// <summary>
         /// Factory functions to create money from different formats of inputs
         /// decimal and string. In combination with a non-public constructor, this streamlines
@@ -18,27 +19,70 @@ namespace Marketplace.Domain
         /// </summary>
         /// <param name="amount"></param>
         /// <returns></returns>
-        public static Money FromDecimal(decimal amount) => new Money(amount);
-        public static Money FromString(string amount) => new Money(decimal.Parse(amount));
+        public static Money FromDecimal(decimal amount, string currency, ICurrencyLookup currencyLookup) => new Money(amount, currency, currencyLookup);
+        public static Money FromString(string amount, string currency, ICurrencyLookup currencyLookup) => new Money(decimal.Parse(amount), currency, currencyLookup);
         
         public decimal Amount { get; }
-        protected Money(decimal amount)
+        public CurrencyDetails Currency { get; }
+        protected Money(decimal amount, string currencyCode, ICurrencyLookup currencyLookup)
         {
-            if (decimal.Round(amount, 2) != amount)
+            if (string.IsNullOrEmpty(currencyCode))
             {
-                throw new ArgumentOutOfRangeException(nameof(amount), "Amount cannot have more than two decimals");
+                throw new ArgumentNullException(nameof(currencyCode), "Currency code must be specified");
+            }
+
+            var currency = currencyLookup.FindCurrency(currencyCode);
+            if (!currency.InUse)
+            {
+                throw new ArgumentException($"Currency {currencyCode} is not valid");
+            }
+
+            if (decimal.Round(amount, currency.DecimalPlaces) != amount)
+            {
+                throw new ArgumentOutOfRangeException(nameof(amount), $"Amount in {currencyCode} cannot have more than {currency.DecimalPlaces} decimals");
             }
 
             Amount = amount;
+            Currency = currency;
         }
 
-        public Money Add(Money summand) => new Money(Amount + summand.Amount);
+        /// <summary>
+        /// used by operations like addition and subtraction
+        /// </summary>
+        /// <param name="amount"></param>
+        /// <param name="currency"></param>
+        private Money(decimal amount, CurrencyDetails currency)
+        {
+            Amount = amount;
+            Currency = currency;
+        }
 
-        public Money Subtract(Money subtrahend) => new Money(Amount - subtrahend.Amount);
+        public Money Add(Money summand)
+        {
+            if (Currency != summand.Currency)
+            {
+                throw new CurrencyMismatchException("Cannot sum amounts with different currencies");
+            }
+            return new Money(Amount + summand.Amount, Currency);
+        }
+
+        public Money Subtract(Money subtrahend)
+        {
+            if (Currency!= subtrahend.Currency)
+            {
+                throw new CurrencyMismatchException("Cannot subtract amounts with different currencies");
+            }
+
+            return new Money(Amount - subtrahend.Amount, Currency);
+        }
 
         public static Money operator +(Money summand1, Money summand2) => summand1.Add(summand2);
 
         public static Money operator -(Money minuend, Money subtrahend) => minuend.Subtract(subtrahend);
-        
+
+        public override string ToString()
+        {
+            return $"{Currency.CurrencyCode}{Amount}";
+        }
     }
 }
