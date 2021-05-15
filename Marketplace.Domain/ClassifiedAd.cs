@@ -6,7 +6,10 @@
     /// </summary>
     public class ClassifiedAd
     {
-        public ClassifiedAdId Id { get; private set; }
+        private UserId _ownerId;
+        private decimal _price;
+        private string _text;
+        private string _title;
 
         /// <summary>
         /// Must supply ClassifiedAdId and UserId for creating an Ad
@@ -21,14 +24,12 @@
             _ownerId = ownerId;
         }
 
-        private UserId _ownerId;
-        private string _title;
-        private string _text;
-        private decimal _price;
+        public ClassifiedAdId Id { get; private set; }
 
         public void SetTitle(string title) => _title = title;
-        public void UpdateText(string text) => _text = text;
+
         public void UpdatePrice(decimal price) => _price = price;
 
+        public void UpdateText(string text) => _text = text;
     }
 }

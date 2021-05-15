@@ -6,9 +6,8 @@ namespace Marketplace.Domain
 {
     public class ClassifiedAdTitle : Value<ClassifiedAdTitle>
     {
-        public static ClassifiedAdTitle FromString(string title) => new ClassifiedAdTitle(title);
-
         private readonly string _value;
+
         private ClassifiedAdTitle(string value)
         {
             if (value.Length > 100)
@@ -34,5 +33,7 @@ namespace Marketplace.Domain
             return new ClassifiedAdTitle(Regex.Replace(
                 supportedTags, "<.*?>", string.Empty));
         }
+
+        public static ClassifiedAdTitle FromString(string title) => new ClassifiedAdTitle(title);
     }
 }
