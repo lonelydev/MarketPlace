@@ -35,5 +35,10 @@ namespace Marketplace.Domain
         }
 
         public static ClassifiedAdTitle FromString(string title) => new ClassifiedAdTitle(title);
+
+        public static implicit operator string(ClassifiedAdTitle self)
+        {
+            return self._value;
+        }
     }
 }
