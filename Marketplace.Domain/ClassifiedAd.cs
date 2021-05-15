@@ -1,10 +1,12 @@
-﻿namespace Marketplace.Domain
+﻿using Marketplace.Framework;
+
+namespace Marketplace.Domain
 {
     /// <summary>
     /// first create all properties with the right access modifiers
     /// ensure that you do not expose what does not have to be exposed
     /// </summary>
-    public class ClassifiedAd
+    public class ClassifiedAd : Entity
     {
         /// <summary>
         /// Must supply ClassifiedAdId and UserId for creating an Ad
@@ -18,15 +20,13 @@
             Id = id;
             OwnerId = ownerId;
             State = ClassifiedAdState.Inactive;
+            EnsureValidState();
+            Raise(new Events.ClassifiedAdCreated
+            {
+                Id = id,
+                OwnerId = ownerId
+            });
         }
-
-        public ClassifiedAdId Id { get; private set; }
-
-        public void SetTitle(ClassifiedAdTitle title) => Title = title;
-
-        public void UpdatePrice(Price price) => Price = price;
-
-        public void UpdateText(ClassifiedAdText text) => Text = text;
 
         public enum ClassifiedAdState
         {
@@ -36,12 +36,59 @@
             MarkedAsSold
         }
 
-        public ClassifiedAdState State { get; private set; }
-        public ClassifiedAdText Text { get; private set; }
-        public ClassifiedAdTitle Title { get; private set; }
-        public Price Price { get; private set; }
         public UserId ApprovedBy { get; private set; }
+        public ClassifiedAdId Id { get; private set; }
+
         public UserId OwnerId { get; private set; }
+
+        public Price Price { get; private set; }
+
+        public ClassifiedAdState State { get; private set; }
+
+        public ClassifiedAdText Text { get; private set; }
+
+        public ClassifiedAdTitle Title { get; private set; }
+
+        public void RequestToPublish()
+        {
+            State = ClassifiedAdState.PendingReview;
+            EnsureValidState();
+            Raise(new Events.ClassifiedAdSentForReview { Id = Id });
+        }
+
+        public void SetTitle(ClassifiedAdTitle title)
+        {
+            Title = title;
+            EnsureValidState();
+            Raise(new Events.ClassifiedAdTitleChanged
+            {
+                Id = Id,
+                Title = title
+            });
+        }
+
+        public void UpdatePrice(Price price)
+        {
+            Price = price;
+            EnsureValidState();
+            Raise(new Events.ClassifiedAdPriceUpdated
+            {
+                Id = Id,
+                CurrencyCode = price.Currency.CurrencyCode,
+                Price = price.Amount
+            });
+        }
+
+        public void UpdateText(ClassifiedAdText text)
+        {
+            Text = text;
+            EnsureValidState();
+            Raise(new Events.ClassifiedAdTextUpdated
+            {
+                Id = Id,
+                AdText = text
+            });
+        }
 
         protected void EnsureValidState()
         {
@@ -65,12 +112,6 @@
             {
                 throw new InvalidEntityStateException(this, $"Post-checks failed in state {State}");
             }
-        }
-
-        public void RequestToPublish()
-        {
-            State = ClassifiedAdState.PendingReview;
-            EnsureValidState();
         }
     }
 }
